@@ -1,7 +1,7 @@
 import numpy as np
 
 class Boid:
-    def __init__(self, position, velocity, max_speed=3, perception_radius=30):
+    def __init__(self, position, velocity, max_speed=3.0, perception_radius=60):
         self.position = np.array(position, dtype=float)
         self.velocity = np.array(velocity, dtype=float)
         self.max_speed = max_speed

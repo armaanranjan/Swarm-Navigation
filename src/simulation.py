@@ -2,117 +2,88 @@ import pygame
 import numpy as np
 
 from boids import Boid
-from swarm import compute_forces
 from obstacles import Obstacle
+from swarm import compute_forces
 from metrics import polarization, collision_count
+from logger import DataLogger
 
 # ===============================
-# PYGAME SETUP
+# CONFIG
 # ===============================
 WIDTH, HEIGHT = 800, 600
 FPS = 60
+NUM_BOIDS = 40
+NOISE_STD = 0.8          # ← SENSOR NOISE
+CENTRALIZED = False     # ← TOGGLE THIS
+STEPS = 0
 
+# ===============================
+# INIT
+# ===============================
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Boids Swarm Simulation")
 clock = pygame.time.Clock()
 
-# ===============================
-# SWARM PARAMETERS
-# ===============================
-NUM_BOIDS = 30
-
-# ===============================
-# CREATE BOIDS
-# ===============================
-boids = []
-for _ in range(NUM_BOIDS):
-    position = np.random.rand(2) * np.array([WIDTH, HEIGHT])
-    velocity = np.random.randn(2)
-    boids.append(Boid(position, velocity))
-
-# ===============================
-# CREATE OBSTACLES
-# ===============================
-obstacles = [
-    Obstacle((400, 300), 50),
-    Obstacle((200, 150), 40),
-    Obstacle((600, 450), 60)
+boids = [
+    Boid(
+        position=np.random.rand(2) * [WIDTH, HEIGHT],
+        velocity=np.random.randn(2)
+    )
+    for _ in range(NUM_BOIDS)
 ]
 
+obstacles = [
+    Obstacle((400, 300), 60),
+    Obstacle((200, 150), 40),
+    Obstacle((600, 450), 50)
+]
+
+logger = DataLogger(
+    filename=f"run_centralized_{CENTRALIZED}_noise_{NOISE_STD}.csv"
+)
+
 # ===============================
-# MAIN LOOP
+# LOOP
 # ===============================
 running = True
 while running:
     clock.tick(FPS)
     screen.fill((30, 30, 30))
 
-    # ---- Handle Events ----
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # ---- Draw Obstacles ----
+    # Draw obstacles
     for obs in obstacles:
-        pygame.draw.circle(
-            screen,
-            (100, 100, 100),
-            obs.position.astype(int),
-            obs.radius
-        )
+        pygame.draw.circle(screen, (120, 120, 120),
+                           obs.position.astype(int), obs.radius)
 
-    # ---- Update Boids ----
+    # Update boids
     for boid in boids:
-        acceleration = compute_forces(
-        boid,
-        boids,
-        obstacles,
-        sep_weight=1.2,
-        align_weight=0.8,
-        coh_weight=0.8,
-        obs_weight=4.0
-    )
-
-
-        boid.update(acceleration)
-
-        # Wrap-around boundary conditions
+        acc = compute_forces(
+            boid, boids, obstacles,
+            centralized=CENTRALIZED,
+            noise_std=NOISE_STD
+        )
+        boid.update(acc)
         boid.position[0] %= WIDTH
         boid.position[1] %= HEIGHT
 
-        # ---- Draw Boid ----
-        pygame.draw.circle(
-            screen,
-            (200, 200, 255),
-            boid.position.astype(int),
-            4
-        )
+        pygame.draw.circle(screen, (200, 200, 255),
+                           boid.position.astype(int), 4)
 
-        # ---- Draw Heading Vector ----
-        vel_norm = np.linalg.norm(boid.velocity)
-        if vel_norm > 0:
-            heading = boid.velocity / vel_norm
-            end_pos = boid.position + heading * 12
-
-            pygame.draw.line(
-                screen,
-                (255, 100, 100),
-                boid.position.astype(int),
-                end_pos.astype(int),
-                2
-            )
-
-    # ===============================
-    # METRICS
-    # ===============================
+    # Metrics
     pol = polarization(boids)
     agent_col, obs_col = collision_count(boids, obstacles)
+    logger.log(STEPS, pol, agent_col, obs_col)
+    STEPS += 1
 
     pygame.display.set_caption(
-        f"Boids Swarm | Pol: {pol:.2f} | Agent Col: {agent_col} | Obs Col: {obs_col}"
+        f"Pol={pol:.2f} | AgentCol={agent_col} | ObsCol={obs_col}"
     )
 
     pygame.display.flip()
 
 pygame.quit()
+logger.close()
