@@ -42,6 +42,7 @@ boids-swarm-robotics/
 │ ├── swarm.py # Computes local forces: separation, alignment, cohesion, obstacle avoidance
 │ ├── obstacles.py # Defines obstacle positions and radii
 │ ├── metrics.py # Computes polarization and collision metrics
+│ ├── logger.py 
 │ └── simulation.py # Main simulation loop with Pygame visualization
 ├── experiments/ # Experiment notes and parameter tests
 ├── results/ # Screenshots, videos, and plots
