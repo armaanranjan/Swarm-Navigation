@@ -34,7 +34,7 @@ The system is designed to be:
 ## Implementation Details
 
 ### Architecture
-
+```
 boids-swarm-robotics/
 │
 ├── src/
@@ -47,9 +47,8 @@ boids-swarm-robotics/
 ├── results/ # Screenshots, videos, and plots
 ├── requirements.txt # Python dependencies
 └── README.md # Project documentation
+```
 
-yaml
-Copy code
 
 ### Algorithm
 
@@ -119,24 +118,20 @@ Metrics are displayed **in real-time** in the Pygame window.
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/<your-username>/Swarm-Navigation.git
+git clone https://github.com/armaanranjan/Swarm-Navigation.git
 cd Swarm-Navigation
 Install dependencies:
-
-bash
-Copy code
 pip install -r requirements.txt
+```
+
+```bash
 Run the simulation:
-
-bash
-Copy code
 python src/simulation.py
-Experiments and Extensions
-Test flocking behavior with/without alignment, cohesion, or separation
-
-Test obstacle avoidance under different obstacle densities
-
-Vary obs_weight, sep_weight, coh_weight to study robustness
+```
+## Experiments and Extensions:
+- Test flocking behavior with/without alignment, cohesion, or separation
+- Test obstacle avoidance under different obstacle densities
+- Vary obs_weight, sep_weight, coh_weight to study robustness
 
 ## Future Work:
 - Add sensor noise
